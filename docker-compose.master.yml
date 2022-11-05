@@ -51,7 +51,7 @@ services:
       traefik.http.routers.blog.tls: "true"
       traefik.http.routers.blog.entrypoints: "websecure"
       traefik.http.routers.blog.tls.certresolver: "leresolver"
-      traefik.http.routers.blog.loadbalancer.server.port: "80"
+      traefik.http.services.blog.loadbalancer.server.port: "80"
 
 volumes:
   letsencrypt:
