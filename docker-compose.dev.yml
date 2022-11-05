@@ -1,0 +1,26 @@
+version: "2.4"
+
+services:
+
+  server:
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    volumes:
+      - "./backend:/srv/server"
+    environment:
+      DJANGO_SETTINGS_MODULE: blog.settings.master
+    command: >
+      uwsgi
+        --socket 0.0.0.0:8000
+        --master
+        --processes 1
+        --threads 4
+        --python-autoreload 1
+        --wsgi-file ./blog/wsgi.py
+
+  nginx:
+    ports:
+      - "80:80"
+    environment:
+      COMMENT_EXPIRES: "#"

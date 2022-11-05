@@ -1,0 +1,64 @@
+version: '2.4'
+
+x-server-vars: &server-vars
+  SERVER_NAME: "${SERVER_NAME}"
+  DJANGO_SETTINGS_MODULE: "${DJANGO_SETTINGS_MODULE}"
+  SECRET_KEY: "${SECRET_KEY}"
+
+x-db-vars: &db-vars
+  POSTGRES_HOST: "db"
+  POSTGRES_USER: "blog"
+  POSTGRES_PASSWORD: "blog"
+  POSTGRES_DB: "blog"
+  PGDATA: "/var/lib/postgresql/data"
+
+services:
+
+  db:
+    image: postgres
+    volumes:
+      - "db:/var/lib/postgresql/data/"
+    environment:
+      <<: *db-vars
+      <<: *server-vars
+
+  server:
+    image: server
+    build:
+      context: ./backend
+    depends_on:
+      - db
+    volumes:
+      - 'media:/srv/server/media'
+      - 'static:/srv/server/static'
+    environment:
+      <<: *db-vars
+      <<: *server-vars
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    command: >
+      uwsgi
+        --scoket 0.0.0.0:8000
+        --master
+        --processes 1
+        --threads 4
+        --python-autoreload 1
+        --wsgi-file ./blog/wsgi.py
+
+  nginx:
+    build:
+      context: ./nginx
+    image: nginx
+    volumes:
+      - 'media:/srv/server/media'
+      - 'static:/srv/server/static'
+    environment:
+      DOLLAR: "$$"
+      SERVER_NAME: "${SERVER_NAME}"
+      COMMENT_EXPIRES: "#"
+
+volumes:
+  db:
+  media:
+  static:

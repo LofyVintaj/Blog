@@ -1,0 +1,57 @@
+version: "2.4"
+
+services:
+
+  traefik:
+    image: "traefik:v2.2"
+    restart: always
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "letsencrypt:/letsencrypt"
+    ports:
+      - "80:80"
+      - "443:443"
+    command: >
+      --providers.docker=True
+      --providers.docker.exposedbydefault=false
+      --entrypoints.web.address=:80
+      --entrypoints.web.http.redirections.entrypoint.to=websecure
+      --entrypoints.web.http.redirections.entrypoint.scheme=https
+      --entrypoints.web.http.redirections.entrypoint.permanent=true
+      --entrypoints.websecure.address=:443
+      --certificatesResolvers.leresolver.acme.tlsChallenge=true
+      --certificatesResolvers.leresolver.acme.email=ssl@idpowers.com
+      --certificatesResolvers.leresolver.acme.storage=/letsencrypt/acme.json
+
+  db:
+    restart: always
+
+  server:
+    restart: always
+    volumes:
+      - "./backend:/srv/server"
+    environment:
+      DJANGO_SETTINGS_MODULE: blog.settings.master
+    command: >
+      uwsgi
+        --wsgi-file ./blog/wsgi.py
+        --socket 0.0.0.0:8000
+        --master --processes=4 --threads=8
+        --harakiri=75
+        --max-requests=200
+        --reload-on-rss=400
+        --disable-logging
+        --log-5xx
+
+  nginx:
+    restart: always
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.blog.rule: "Host(`${SERVER_NAME}`)"
+      traefik.http.routers.blog.tls: "true"
+      traefik.http.routers.blog.entrypoints: "websecure"
+      traefik.http.routers.blog.tls.certresolver: "leresolver"
+      traefik.http.routers.blog.loadbalancer.server.port: "80"
+
+volumes:
+  letsencrypt:

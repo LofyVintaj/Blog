@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ object.title }}{% endblock %}
+
+{% block content %}
+<div class="container article">
+    <h1>{{ object.title }}</h1>
+    <p>{{ object.published|date:'Y-m-d H:i' }}</p>
+    <br>
+    <div class="content">
+        <p>
+            {{ object.content.html|safe }}
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+server {
+    listen 80;
+    server_name ${SEVER_NAME};
+
+    client_max_body_size 100m;
+
+    if (${DOLLAR}host != '${SERVER_NAME}') {
+        rewrite ^ https://${SERVER_NAME}${DOLLAR}request_uri? permanent;
+    }
+
+    location /static/ {
+        alias /srv/server/static/;
+    }
+
+    location /media/ {
+        alias /srv/server/media/;
+    }
+
+    location / {
+        include uwsgi_params;
+        uwsgi_pass server:8000;
+        proxy_set_header    Host ${DOLLAR}host;
+        proxy_set_header    X-Real-IP ${DOLLAR}remote_addr;
+        proxy_set_header    X-Forwarded-Proto ${DOLLAR}scheme;
+    }
+
+}
