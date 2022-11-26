@@ -30,7 +30,7 @@ services:
       - db
     volumes:
       - 'media:/srv/server/media'
-      - 'static:/srv/server/static'
+      - 'static:/srv/server/static_intermediate'
     environment:
       <<: *db-vars
       <<: *server-vars
@@ -52,7 +52,7 @@ services:
     image: nginx
     volumes:
       - 'media:/srv/server/media'
-      - 'static:/srv/server/static'
+      - 'static:/srv/server/static_intermediate'
     environment:
       DOLLAR: "$$"
       SERVER_NAME: "${SERVER_NAME}"

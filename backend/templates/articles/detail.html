@@ -7,6 +7,7 @@
 <div class="container article">
     <h1>{{ object.title }}</h1>
     <p>{{ object.published|date:'Y-m-d H:i' }}</p>
+    <img src="{{ article.image.url }}" width="100%" alt="">
     <br>
     <div class="content">
         <p>
